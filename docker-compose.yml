@@ -1,0 +1,29 @@
+services:
+  aceest-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: aceest-fitness-app
+    environment:
+      - PYTHONPATH=/app
+      - DB_PATH=/app/data/aceest_fitness.db
+    volumes:
+      - ./data:/app/data
+      - "./The code versions for DevOps Assignment":/app/src
+    ports:
+      - "5000:5000"  # For potential web interface
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sqlite3; conn = sqlite3.connect('/app/data/aceest_fitness.db'); conn.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - aceest-network
+
+volumes:
+  data_volume:
+
+networks:
+  aceest-network:
+    driver: bridge

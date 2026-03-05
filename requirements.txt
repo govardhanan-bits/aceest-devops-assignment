@@ -1,0 +1,19 @@
+# Core application dependencies
+matplotlib>=3.6.0
+fpdf2>=2.7.0
+
+# Database and GUI (included with Python)
+# SQLite3 is included with Python standard library
+# tkinter is included with Python standard library
+
+# Development and Testing Dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+coverage>=7.0.0
+
+# Code Quality Tools  
+flake8>=5.0.0
+black>=23.0.0
+
+# Security (optional for assignment)
+bandit>=1.7.0
