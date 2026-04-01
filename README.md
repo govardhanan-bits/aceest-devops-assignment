@@ -241,6 +241,8 @@ ACEest-DevOps/
 │   ├── Aceestver-1.0.py       # Version 1.0
 │   ├── Aceestver-1.1.py       # Version 1.1
 │   └── ...                    # Other versions
+├── k8s/
+│   └── deployment.yml         # Kubernetes manifests
 ├── app.py                     # Flask application
 ├── requirements.txt           # Python dependencies
 ├── Dockerfile                 # Docker configuration
@@ -277,6 +279,42 @@ The ACEest application follows semantic versioning (MAJOR.MINOR.PATCH):
 - **Staging**: Pre-production testing environment
 - **Production**: Live production environment
 
+### Kubernetes Deployment
+
+The project includes Kubernetes manifests in `k8s/deployment.yml`:
+
+**Components:**
+- **Deployment** — 2 replicas with rolling update strategy (zero-downtime)
+- **Service** — ClusterIP exposing port 80 → 5000
+- **PersistentVolumeClaim** — 1Gi storage for SQLite database persistence
+- **Ingress** — External access via hostname routing
+
+**Deploy to Kubernetes:**
+
+```bash
+# Apply all manifests
+kubectl apply -f k8s/deployment.yml
+
+# Check deployment status
+kubectl get deployments
+kubectl get pods
+kubectl get services
+
+# View logs
+kubectl logs -l app=aceest-fitness
+
+# Scale replicas
+kubectl scale deployment aceest-fitness-app --replicas=3
+```
+
+**Health Probes Configured:**
+- **Liveness Probe**: `GET /health` every 30s — restarts unhealthy containers
+- **Readiness Probe**: `GET /health` every 10s — removes unready pods from service
+
+**Resource Limits:**
+- CPU: 100m request / 500m limit
+- Memory: 128Mi request / 256Mi limit
+
 ### Blue-Green Deployment
 
 1. Deploy new version to "green" environment
@@ -287,10 +325,14 @@ The ACEest application follows semantic versioning (MAJOR.MINOR.PATCH):
 ### Rollback Strategy
 
 ```bash
-# Rollback to previous version
+# Docker rollback
 docker compose down
 docker pull aceest-fitness-app:previous
 docker compose up -d
+
+# Kubernetes rollback
+kubectl rollout undo deployment aceest-fitness-app
+kubectl rollout status deployment aceest-fitness-app
 ```
 
 ## 📈 Monitoring & Logging
