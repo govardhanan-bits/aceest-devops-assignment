@@ -1,44 +1,50 @@
-# Use Python 3.9 slim image as base
-FROM python:3.9-slim
+# Use Python 3.10 slim image as base for smaller image size
+FROM python:3.10-slim
+
+# Set metadata labels
+LABEL maintainer="ACEest DevOps Team"
+LABEL description="ACEest Fitness Application - DevOps Implementation"
+LABEL version="1.0.0"
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DISPLAY=:0
-
-# Install system dependencies for tkinter and GUI
-RUN apt-get update && apt-get install -y \
-    python3-tk \
-    xvfb \
-    x11-apps \
-    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=app.py \
+    FLASK_HOST=0.0.0.0 \
+    FLASK_PORT=5000
 
 # Set work directory
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Copy requirements first for better Docker layer caching
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Use --no-cache-dir to reduce image size
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir flask pytest && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY app.py .
 
-# Create non-root user for security
-RUN groupadd -r aceest && useradd -r -g aceest aceest
-RUN chown -R aceest:aceest /app
+# Create directory for database with proper permissions
+RUN mkdir -p /app/data && chmod 755 /app/data
+
+# Create non-root user for security best practices
+RUN groupadd -r aceest && \
+    useradd -r -g aceest -d /app -s /bin/bash aceest && \
+    chown -R aceest:aceest /app
+
+# Switch to non-root user
 USER aceest
 
-# Create directory for database
-RUN mkdir -p /app/data
+# Expose application port
+EXPOSE 5000
 
-# Expose port (if web interface is added later)
-EXPOSE 8000
+# Health check to ensure container is running properly
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:5000/health')" || exit 1
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD python -c "import sqlite3; conn = sqlite3.connect('/app/data/aceest_fitness.db'); conn.close()" || exit 1
-
-# Command to run the application
-CMD ["python", "Aceestver-3.2.4.py"]
+# Run the application
+CMD ["python", "app.py"]

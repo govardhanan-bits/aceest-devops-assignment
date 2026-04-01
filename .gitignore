@@ -28,6 +28,25 @@ MANIFEST
 
 # Virtual Environment
 venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# pytest
+.pytest_cache/
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Old/backup files
+README.old.md
 env/
 ENV/
 
