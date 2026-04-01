@@ -1,5 +1,9 @@
 # ACEest Fitness Application - DevOps CI/CD Project
 
+**Submitted by:** Govardhanan K S  
+**Subject:** Introduction to DevOps – Assignment  
+**Institution:** BITS Pilani  
+
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-green)
 ![Python](https://img.shields.io/badge/python-3.10-blue)
@@ -345,6 +349,7 @@ This project is part of an academic assignment for the Introduction to DevOps co
 
 ## 👥 Author
 
+**Name**: Govardhanan K S  
 **Course**: Introduction to DevOps  
 **Date**: March 2026  
 **Institution**: BITS Pilani
