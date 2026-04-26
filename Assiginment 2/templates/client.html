@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ client['name'] }} - ACEest Fitness{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 style="color: #d4af37;">{{ client['name'] }}</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="row">
+    <!-- Client Info -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">Client Profile</div>
+            <div class="card-body">
+                <p><strong>Age:</strong> {{ client['age'] }}</p>
+                <p><strong>Weight:</strong> {{ client['weight'] }} kg</p>
+                <p><strong>Height:</strong> {{ client['height'] or 'N/A' }} cm</p>
+                <p><strong>Program:</strong> {{ client['program'] }}</p>
+                <p><strong>Daily Calories:</strong> {{ client['calories'] }} kcal</p>
+                <p><strong>Target Weight:</strong> {{ client['target_weight'] or 'N/A' }} kg</p>
+                <p><strong>Membership:</strong>
+                    <span class="badge bg-{{ 'success' if client['membership_status'] == 'active' else 'secondary' }}">
+                        {{ client['membership_status'] }}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program Details -->
+    <div class="col-md-8 mb-4">
+        <div class="card mb-3">
+            <div class="card-header">Workout Plan</div>
+            <div class="card-body">
+                <p>{{ program_data.get('workout', 'No plan assigned') }}</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Nutrition Plan</div>
+            <div class="card-body">
+                <p>{{ program_data.get('diet', 'No diet assigned') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Progress -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Log Weekly Adherence</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('log_progress', client_id=client['id']) }}">
+                    <div class="input-group">
+                        <input type="number" name="adherence" class="form-control" placeholder="Adherence %" min="0" max="100" required>
+                        <button type="submit" class="btn btn-gold">Log Progress</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Log Workout</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('log_workout', client_id=client['id']) }}">
+                    <div class="row mb-2">
+                        <div class="col">
+                            <input type="date" name="workout_date" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <input type="text" name="workout_type" class="form-control" placeholder="Type" required>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <input type="number" name="duration" class="form-control" placeholder="Duration (min)">
+                        </div>
+                        <div class="col">
+                            <input type="text" name="notes" class="form-control" placeholder="Notes">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-gold w-100">Log Workout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress History -->
+<div class="card mb-4">
+    <div class="card-header">Progress History</div>
+    <div class="card-body">
+        {% if progress %}
+        <table class="table table-dark table-sm">
+            <thead><tr><th>Week</th><th>Adherence</th><th>Date</th></tr></thead>
+            <tbody>
+                {% for p in progress %}
+                <tr>
+                    <td>{{ p['week'] }}</td>
+                    <td>{{ p['adherence'] }}%</td>
+                    <td>{{ p['logged_at'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No progress data yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Workout History -->
+<div class="card mb-4">
+    <div class="card-header">Recent Workouts</div>
+    <div class="card-body">
+        {% if workouts %}
+        <table class="table table-dark table-sm">
+            <thead><tr><th>Date</th><th>Type</th><th>Duration</th><th>Notes</th></tr></thead>
+            <tbody>
+                {% for w in workouts %}
+                <tr>
+                    <td>{{ w['workout_date'] }}</td>
+                    <td>{{ w['workout_type'] }}</td>
+                    <td>{{ w['duration'] }} min</td>
+                    <td>{{ w['notes'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No workouts logged yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

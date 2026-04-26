@@ -1,0 +1,119 @@
+# =============================================================
+# Shadow Deployment Strategy for ACEest Fitness
+# =============================================================
+# Production traffic is mirrored to a shadow deployment for
+# testing the new version under real load. Shadow responses
+# are discarded; users always see the stable version.
+# Requires Istio service mesh for traffic mirroring.
+# =============================================================
+
+# --- Primary Deployment (serves real traffic) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-primary
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    track: primary
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      track: primary
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        track: primary
+        version: v3.1.2
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.1.2
+          ports:
+            - containerPort: 5000
+
+---
+# --- Shadow Deployment (receives mirrored traffic) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-shadow
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    track: shadow
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      track: shadow
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        track: shadow
+        version: v3.2.4
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.2.4
+          ports:
+            - containerPort: 5000
+
+---
+# --- Service for Primary ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-fitness-primary-svc
+  namespace: aceest
+spec:
+  selector:
+    app: aceest-fitness
+    track: primary
+  ports:
+    - port: 80
+      targetPort: 5000
+
+---
+# --- Service for Shadow ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-fitness-shadow-svc
+  namespace: aceest
+spec:
+  selector:
+    app: aceest-fitness
+    track: shadow
+  ports:
+    - port: 80
+      targetPort: 5000
+
+---
+# --- Istio VirtualService for Traffic Mirroring ---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: aceest-fitness-mirror
+  namespace: aceest
+spec:
+  hosts:
+    - aceest-fitness-primary-svc
+  http:
+    - route:
+        - destination:
+            host: aceest-fitness-primary-svc
+            port:
+              number: 80
+          weight: 100
+      mirror:
+        host: aceest-fitness-shadow-svc
+        port:
+          number: 80
+      mirrorPercentage:
+        value: 100.0

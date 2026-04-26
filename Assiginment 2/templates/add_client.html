@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Add Client - ACEest Fitness{% endblock %}
+{% block content %}
+<h2 style="color: #d4af37;" class="mb-4">Add New Client</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Name *</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="age" class="form-control" min="10" max="100">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" name="weight" class="form-control" step="0.1" min="20">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Height (cm)</label>
+                    <input type="number" name="height" class="form-control" step="0.1" min="100">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Program *</label>
+                    <select name="program" class="form-select" required>
+                        <option value="">Select...</option>
+                        {% for prog in programs %}
+                        <option value="{{ prog }}">{{ prog }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Target Weight (kg)</label>
+                    <input type="number" name="target_weight" class="form-control" step="0.1">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Target Adherence (%)</label>
+                    <input type="number" name="target_adherence" class="form-control" value="80" min="0" max="100">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Membership End Date</label>
+                    <input type="date" name="membership_end" class="form-control">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-gold">Save Client</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

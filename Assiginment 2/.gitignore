@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.DS_Store
+venv/
+.venv/
+*.zip
+*.docx
+test-results.xml
+coverage.xml
+.sonar/

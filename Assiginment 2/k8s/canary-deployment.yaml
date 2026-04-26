@@ -1,0 +1,91 @@
+# =============================================================
+# Canary Deployment Strategy for ACEest Fitness
+# =============================================================
+# A small percentage of traffic (1 out of 4 pods) is routed to
+# the canary (new version). Monitor; if stable, scale up canary
+# and scale down stable. Rollback: delete canary deployment.
+# =============================================================
+
+# --- Stable Deployment (majority traffic) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-stable
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    track: stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        track: stable
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.1.2
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+---
+# --- Canary Deployment (small traffic slice ~25%) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-canary
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    track: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        track: canary
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.2.4
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+---
+# --- Service: Routes to both stable and canary via shared label ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-fitness-canary-service
+  namespace: aceest
+spec:
+  type: NodePort
+  selector:
+    app: aceest-fitness   # matches both stable and canary
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30082

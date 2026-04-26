@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Programs - ACEest Fitness{% endblock %}
+{% block content %}
+<h2 style="color: #d4af37;" class="mb-4">Fitness Programs</h2>
+
+<div class="row">
+    {% for name, data in programs.items() %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">{{ name }}</div>
+            <div class="card-body">
+                <h6 style="color: #d4af37;">Workout Plan</h6>
+                <p>{{ data['workout'] }}</p>
+                <h6 style="color: #d4af37;">Nutrition Plan</h6>
+                <p>{{ data['diet'] }}</p>
+                <hr style="border-color: #555;">
+                <p><strong>Calorie Factor:</strong> {{ data['calorie_factor'] }} kcal/kg</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ACEest Fitness & Gym{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #1a1a1a; color: #fff; }
+        .navbar { background-color: #d4af37 !important; }
+        .navbar-brand, .nav-link { color: #000 !important; font-weight: bold; }
+        .card { background-color: #2a2a2a; border: 1px solid #d4af37; }
+        .card-header { background-color: #333; color: #d4af37; font-weight: bold; }
+        .btn-gold { background-color: #d4af37; color: #000; font-weight: bold; border: none; }
+        .btn-gold:hover { background-color: #c49b2b; color: #000; }
+        .table { color: #fff; }
+        .form-control, .form-select { background-color: #333; color: #fff; border: 1px solid #555; }
+        .form-control:focus, .form-select:focus { background-color: #444; color: #fff; }
+        footer { background-color: #111; padding: 20px; text-align: center; color: #888; }
+    </style>
+</head>
+<body>
+    {% if session.get('user') %}
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">ACEest FITNESS & GYM</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('programs') }}">Programs</a>
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout ({{ session.get('user') }})</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="mt-5">
+        <p>ACEest Fitness & Gym &copy; 2025 | DevOps CI/CD Pipeline Assignment</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

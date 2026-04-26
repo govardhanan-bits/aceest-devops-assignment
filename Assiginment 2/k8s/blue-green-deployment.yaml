@@ -1,0 +1,105 @@
+# =============================================================
+# Blue-Green Deployment Strategy for ACEest Fitness
+# =============================================================
+# Two identical environments (blue/green). Traffic is switched
+# from old (blue) to new (green) once validation passes.
+# Rollback: switch service selector back to blue.
+# =============================================================
+
+# --- BLUE Deployment (current stable) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-blue
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    slot: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        slot: blue
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.1.2
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# --- GREEN Deployment (new version) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-green
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    slot: green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        slot: green
+    spec:
+      containers:
+        - name: aceest-fitness
+          image: yourdockerhubusername/aceest-fitness:v3.2.4
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# --- Service: Point to GREEN to switch traffic ---
+# To rollback, change selector slot: green -> blue
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-fitness-bg-service
+  namespace: aceest
+spec:
+  type: NodePort
+  selector:
+    app: aceest-fitness
+    slot: green   # <-- Change to 'blue' for rollback
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30081
